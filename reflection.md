@@ -44,6 +44,14 @@ I did not apply all suggestions from the AI review, such as adding advanced vali
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
 
+My scheduler detects conflicts by checking whether two tasks share the exact same start time. For example, if Morning Walk and Medication are both scheduled at 08:00, the scheduler will flag it as a conflict.
+
+The tradeoff is that this rule does not catch overlapping durations. For example, a 30-minute task starting at 08:00 and a 10-minute task starting at 08:15 would technically overlap, but my scheduler would not flag it because their start times are different.
+
+This is a reasonable tradeoff for this project because the app is designed for a single owner managing a small number of daily pet tasks. Exact time conflicts are the most common and obvious problem to catch. Checking for full duration overlaps would require calculating end times and comparing time ranges, which adds complexity that is not needed at this stage.
+
+If the app were expanded to handle many pets or precise scheduling (for example, a vet clinic), upgrading to duration-based conflict detection would be the right next step.
+
 ---
 
 ## 3. AI Collaboration

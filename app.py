@@ -1,4 +1,5 @@
 import streamlit as st
+from pawpal_system import Owner, Pet, Task, Scheduler
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
@@ -38,10 +39,41 @@ At minimum, your system should:
 
 st.divider()
 
-st.subheader("Quick Demo Inputs (UI only)")
-owner_name = st.text_input("Owner name", value="Jordan")
-pet_name = st.text_input("Pet name", value="Mochi")
-species = st.selectbox("Species", ["dog", "cat", "other"])
+# Initialize a default Owner if one does not already exist
+if "owner" not in st.session_state:
+    st.session_state.owner = Owner(name="Jordan", available_time=60, preferences=[])
+
+st.subheader("Owner")
+with st.form("owner_form"):
+    owner_name = st.text_input("Owner name", value=st.session_state.owner.name)
+    available_time = st.number_input("Available time (minutes)", min_value=1, max_value=480, value=st.session_state.owner.available_time)
+    owner_submitted = st.form_submit_button("Set Owner")
+
+if owner_submitted:
+    pets = st.session_state.owner.pets  # preserve existing pets
+    st.session_state.owner = Owner(name=owner_name, available_time=available_time, preferences=[])
+    st.session_state.owner.pets = pets
+    st.success(f"Owner updated to {owner_name} with {available_time} minutes available.")
+
+st.divider()
+
+st.subheader("Add a Pet")
+with st.form("add_pet_form"):
+    pet_name = st.text_input("Pet name", value="Mochi")
+    species = st.selectbox("Species", ["dog", "cat", "other"])
+    breed = st.text_input("Breed", value="Unknown")
+    age = st.number_input("Age", min_value=0, max_value=30, value=1)
+    submitted = st.form_submit_button("Add Pet")
+
+if submitted:
+    new_pet = Pet(name=pet_name, species=species, age=age, breed=breed)
+    st.session_state.owner.add_pet(new_pet)
+    st.success(f"{pet_name} was added to {st.session_state.owner.name}'s pets.")
+
+if st.session_state.get("owner") and st.session_state.owner.pets:
+    st.write("Current pets:")
+    st.table([{"name": p.name, "species": p.species, "age": p.age, "breed": p.breed}
+              for p in st.session_state.owner.pets])
 
 st.markdown("### Tasks")
 st.caption("Add a few tasks. In your final version, these should feed into your scheduler.")
