@@ -10,7 +10,7 @@ class Task:
     priority: int    # 1 = highest priority
 
     def get_details(self) -> str:
-        pass
+        return f"{self.name} ({self.type}) - {self.duration} min, priority {self.priority}"
 
 
 @dataclass
@@ -21,11 +21,11 @@ class Pet:
     breed: str
     tasks: List[Task] = field(default_factory=list)
 
-    def add_task(self, _task: Task) -> None:
-        pass
+    def add_task(self, task: Task) -> None:
+        self.tasks.append(task)
 
     def get_tasks(self) -> List[Task]:
-        pass
+        return self.tasks
 
 
 class Owner:
@@ -36,18 +36,24 @@ class Owner:
         self.pets: List[Pet] = []
 
     def add_pet(self, pet: Pet) -> None:
-        pass
+        self.pets.append(pet)
 
     def get_available_time(self) -> int:
-        pass
+        return self.available_time
 
 
 class Scheduler:
     def __init__(self):
         self.plan: List[Task] = []
+        self.owner: Owner = None
+        self.pet: Pet = None
 
     def generate_plan(self, owner: Owner, pet: Pet) -> List[Task]:
+        self.owner = owner
+        self.pet = pet
+        # TODO: sort pet tasks by priority and fit within owner's available time
         pass
 
     def explain_plan(self) -> str:
+        # uses self.owner and self.pet set during generate_plan
         pass

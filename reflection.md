@@ -7,27 +7,29 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
-My initial UML design includes four main classes: Owner, Pet, Task, and Scheduler.
+My initial UML design included four main classes: Owner, Pet, Task, and Scheduler.
 
 The Owner class stores user information such as name, available time, and preferences.
 
 The Pet class stores pet details such as name, species, age, and breed.
 
-The Task class represents pet care activities like feeding, walking, or medication, including attributes such as duration and priority.
+The Task class represents pet care activities such as feeding, walking, medication, grooming, or enrichment. It includes important attributes like duration and priority.
 
-The Scheduler class is responsible for generating a daily plan based on task priority and available time, and explaining the reasoning behind the plan.
+The Scheduler class is responsible for generating a daily plan based on the owner's available time and the priority of tasks. It can also explain why certain tasks were selected for the plan.
 
-The system should allow the user to enter and manage owner and pet information.
-
-The system should allow the user to add, edit, and prioritize pet care tasks.
-
-The system should allow the user to generate and view a daily plan based on constraints such as time and priority, and explain the reasoning behind the plan.
 
 **b. Design changes**
 
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+During implementation, I made a few small changes based on feedback from Claude.
+
+One change was simplifying the Task class. Claude initially suggested adding validation logic and strict task type checking, but I removed this to keep the design beginner-friendly and focused on the core requirements of the project.
+
+I also improved the relationships between classes by ensuring that the Owner class properly stores pets using the add_pet() method, and that the Scheduler class keeps track of the current owner and pet when generating a plan. This will help later when explaining the scheduling decisions.
+
+I did not apply all suggestions from the AI review, such as adding advanced validation or redesigning the system for multiple pets, because I wanted to keep the system simple and aligned with the project scope.
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
