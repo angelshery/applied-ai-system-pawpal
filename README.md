@@ -121,4 +121,10 @@ This project taught me how to design an applied AI system that goes beyond simpl
 
 It also helped me understand the importance of balancing simplicity and functionality when building systems for real-world use. Small design choices, such as using scoring instead of sorting, had a significant impact on how the system behaves.
 
+### AI Collaboration
+
+AI tools helped me design the scoring system and improve the structure of the Scheduler class. One helpful suggestion was introducing task scoring instead of simple sorting, which improved decision-making.
+
+However, some AI suggestions were overly complex, such as adding advanced validation or redesigning the system completely. I simplified these ideas to keep the system readable and aligned with the project requirements.
+
 ---
