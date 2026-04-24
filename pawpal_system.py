@@ -88,20 +88,108 @@ class Scheduler:
     def __init__(self):
         self.plan: List[Task] = []
         self.owner: Owner = None
+        self.guardrail_warnings: List[str] = []
+        self.decision_log: List[str] = []
+
+    def score_task(self, task: Task) -> float:
+        """
+        Calculate a score for a task based on priority, type, duration, and start time.
+        Higher scores indicate higher priority for scheduling.
+        
+        Scoring factors:
+        - Priority: Priority 1 gets the highest score (lower number = higher score)
+        - Task type: Medication and feeding get extra weight
+        - Duration: Shorter tasks get a small bonus
+        - Start time: Earlier start times get a slight bonus
+        """
+        # Base score from priority (1 = highest priority, so we invert it)
+        # Priority 1 -> 100 points, Priority 2 -> 90 points, etc.
+        priority_score = (6 - task.priority) * 20
+        
+        # Extra weight for important task types
+        type_bonus = 0
+        if task.type.lower() == "medication":
+            type_bonus = 30
+        elif task.type.lower() == "feeding":
+            type_bonus = 20
+        
+        # Bonus for shorter tasks (shorter = better chance to fit in schedule)
+        # Max bonus of 10 points for tasks under 15 minutes
+        duration_bonus = 0
+        if task.duration < 15:
+            duration_bonus = 10
+        elif task.duration < 30:
+            duration_bonus = 5
+        
+        # Small bonus for earlier start times
+        # Parse "HH:MM" and convert to minutes from midnight
+        hour, minute = map(int, task.start_time.split(":"))
+        start_minutes = hour * 60 + minute
+        # Earlier times get higher bonus (max 10 points for 6 AM, decreasing from there)
+        time_bonus = max(0, 10 - (start_minutes - 360) // 60) if start_minutes >= 360 else 10
+        
+        # Total score
+        total_score = priority_score + type_bonus + duration_bonus + time_bonus
+        return total_score
+
+    def validate_task(self, task: Task) -> bool:
+        """
+        Validate a task for scheduling.
+        Returns True if valid, False otherwise.
+        Checks for:
+        - Missing task name
+        - Duration <= 0
+        - Priority outside 1-5
+        - Invalid start_time format (must be HH:MM)
+        """
+        # Check for missing task name
+        if not task.name or not task.name.strip():
+            self.guardrail_warnings.append(f"Invalid task: missing name")
+            return False
+        
+        # Check duration is positive
+        if task.duration <= 0:
+            self.guardrail_warnings.append(f"Invalid task '{task.name}': duration must be greater than 0")
+            return False
+        
+        # Check priority is between 1 and 5
+        if task.priority < 1 or task.priority > 5:
+            self.guardrail_warnings.append(f"Invalid task '{task.name}': priority must be between 1 and 5")
+            return False
+        
+        # Check start_time format (HH:MM)
+        try:
+            hour, minute = map(int, task.start_time.split(":"))
+            if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+                raise ValueError()
+        except (ValueError, AttributeError):
+            self.guardrail_warnings.append(f"Invalid task '{task.name}': invalid start_time format (use HH:MM)")
+            return False
+        
+        return True
 
     def generate_plan(self, owner: Owner) -> List[Task]:
-        """Build a daily plan by sorting tasks by priority and fitting them into available time."""
+        """Build a daily plan by sorting tasks by score and fitting them into available time."""
         self.owner = owner
         self.plan = []
+        self.guardrail_warnings = []
+        self.decision_log = []
         time_remaining = owner.get_available_time()
 
-        # Sort all tasks by priority (1 = highest), then fit into available time
-        all_tasks = sorted(owner.get_all_tasks(), key=lambda t: t.priority)
+        # Sort all tasks by score (highest first), then fit into available time
+        all_tasks = sorted(owner.get_all_tasks(), key=lambda t: self.score_task(t), reverse=True)
 
         for task in all_tasks:
+            # Skip invalid tasks
+            if not self.validate_task(task):
+                continue
             if task.duration <= time_remaining:
+                score = self.score_task(task)
                 self.plan.append(task)
+                self.decision_log.append(f"Scheduled '{task.name}' (score: {score})")
                 time_remaining -= task.duration
+            else:
+                self.decision_log.append(f"Skipped '{task.name}' - not enough time")
 
         return self.plan
 
@@ -138,13 +226,19 @@ class Scheduler:
         return warnings
 
     def explain_plan(self) -> str:
-        """Return a readable summary of the scheduled plan and total time used."""
+        """Return a readable summary of the scheduled plan with explanations for each task."""
         if not self.plan:
             return "No tasks could be scheduled."
 
         lines = [f"Daily plan for {self.owner.name}:"]
+        
+        # Explain each task with its score and why it was selected
         for task in self.sort_by_time():
-            lines.append(f"  - {task.get_details()}")
+            score = self.score_task(task)
+            lines.append(f"  - {task.name}")
+            lines.append(f"    Type: {task.type}, Priority: {task.priority}, Duration: {task.duration} min, Start: {task.start_time}")
+            lines.append(f"    Score: {score} (higher = more important)")
+            lines.append("")
 
         total = sum(t.duration for t in self.plan)
         lines.append(f"Total time: {total} min of {self.owner.get_available_time()} min available.")

@@ -157,3 +157,23 @@ if st.button("Generate schedule"):
                 st.warning(warning)
         else:
             st.success("✅ No scheduling conflicts detected.")
+
+        # Guardrail warnings
+        if scheduler.guardrail_warnings:
+            st.write("**⚠️ Task validation warnings:**")
+            for warning in scheduler.guardrail_warnings:
+                st.warning(warning)
+
+        # Explain plan
+        st.write("**📋 Schedule Explanation:**")
+        st.code(scheduler.explain_plan(), language="text")
+
+        # Guardrail warnings
+        if scheduler.guardrail_warnings:
+            for warning in scheduler.guardrail_warnings:
+                st.warning(warning)
+
+        # AI Decision Log
+        with st.expander("AI Decision Log"):
+            for entry in scheduler.decision_log:
+                st.write(entry)

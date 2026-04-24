@@ -126,3 +126,53 @@ def test_scheduler_with_no_tasks_returns_empty_plan():
     scheduler.generate_plan(owner)
     assert scheduler.plan == []
     assert scheduler.detect_conflicts() == []
+
+
+# --- AI Scheduling (score_task) ---
+
+def test_medication_scores_higher_than_grooming():
+    """Medication should score higher than grooming due to type bonus."""
+    med_task = Task(name="Medicine", type="medication", duration=10, priority=2, start_time="08:00")
+    groom_task = Task(name="Grooming", type="grooming", duration=10, priority=2, start_time="08:00")
+    
+    scheduler = Scheduler()
+    med_score = scheduler.score_task(med_task)
+    groom_score = scheduler.score_task(groom_task)
+    
+    assert med_score > groom_score, "Medication should score higher than grooming"
+
+
+def test_invalid_priority_creates_guardrail_warning():
+    """Invalid priority (outside 1-5) should create a warning and skip the task."""
+    invalid_task = Task(name="Bad Task", type="walking", duration=20, priority=10, start_time="08:00")
+    
+    owner = Owner(name="Angel", available_time=120, preferences=[])
+    pet = Pet(name="Biscuit", species="Dog", age=3, breed="Golden Retriever")
+    pet.add_task(invalid_task)
+    owner.add_pet(pet)
+    
+    scheduler = Scheduler()
+    scheduler.generate_plan(owner)
+    
+    # Check that a warning was generated
+    assert len(scheduler.guardrail_warnings) > 0
+    assert any("priority" in w.lower() for w in scheduler.guardrail_warnings)
+    # Check that the invalid task was not added to the plan
+    assert invalid_task not in scheduler.plan
+
+
+def test_explain_plan_includes_score():
+    """explain_plan should include the task score or reasoning."""
+    task = Task(name="Morning Walk", type="walking", duration=20, priority=1, start_time="07:00")
+    
+    owner = Owner(name="Angel", available_time=120, preferences=[])
+    pet = Pet(name="Biscuit", species="Dog", age=3, breed="Golden Retriever")
+    pet.add_task(task)
+    owner.add_pet(pet)
+    
+    scheduler = Scheduler()
+    scheduler.generate_plan(owner)
+    explanation = scheduler.explain_plan()
+    
+    # Check that the explanation includes score information
+    assert "Score:" in explanation or "score" in explanation.lower()
