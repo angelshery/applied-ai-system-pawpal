@@ -20,13 +20,13 @@ PRIORITY_LABEL = {
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
-st.title("🐾 PawPal+")
+st.title("🐾 PawPal AI")
 st.caption("A smart daily pet care planner.")
 
-with st.expander("About PawPal+"):
+with st.expander("About PawPal AI"):
     st.markdown(
         """
-**PawPal+** is a pet care planning assistant. It helps a pet owner plan care tasks
+**PawPal AI** is a pet care planning assistant. It helps a pet owner plan care tasks
 for their pet(s) based on constraints like time, priority, and preferences.
 """
     )
