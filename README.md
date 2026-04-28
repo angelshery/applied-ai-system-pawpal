@@ -134,7 +134,6 @@ It also helped me understand the importance of balancing simplicity and function
 ### AI Collaboration
 
 AI tools helped me design the scoring system and improve the structure of the Scheduler class. One helpful suggestion was introducing task scoring instead of simple sorting, which improved decision-making.
-
 However, some AI suggestions were overly complex, such as adding advanced validation or redesigning the system completely. I simplified these ideas to keep the system readable and aligned with the project requirements.
 ---
 ## 🔹 Loom Video
