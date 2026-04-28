@@ -113,6 +113,16 @@ The system’s reliability was evaluated using automated pytest tests and runtim
 **Summary:**  
 All tests passed, and the system consistently generated valid schedules. Reliability improved after adding validation and guardrails.
 
+### Stretch Feature: Evaluation Harness
+
+I added a test harness script that runs PawPal AI on predefined scenarios and prints pass/fail results. This helps evaluate whether the system handles normal scheduling, conflict detection, guardrails, and priority-based scheduling correctly.
+
+Run it with:
+
+```bash
+python tests/evaluation_harness.py
+```
+
 ---
 
 ## 🔹 Reflection
